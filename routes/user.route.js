@@ -3,7 +3,8 @@ const auth = require("../services/auth.service")
 const photoUpload = require("../services/uploadImage.service")
 const validateObjectId = require("../services/validateObjectId.service")
 const router = require("express").Router()
-
+// verify-email
+router.post("/:token/verify-email", userCtrl.verifyEmail)
 // @route user/:id/activate
 router.get("/:id/activate", validateObjectId, auth.verifyAdminToken, userCtrl.activateUserAccount)
 //@route user/

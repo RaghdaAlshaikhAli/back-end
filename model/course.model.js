@@ -1,4 +1,13 @@
 const mongoose = require('mongoose');
+const userSchema = new mongoose.Schema({
+    name:{
+        type : String,
+        required : true,
+        trim : true
+    },
+    });
+const UserModel = mongoose.model('users',userSchema);
+
 const courseSchema = new mongoose.Schema({
     name:{
         type : String,
@@ -67,7 +76,7 @@ const courseSchema = new mongoose.Schema({
     enroll:[
         {
             type : mongoose.Schema.Types.ObjectId,
-            ref : "users"
+            ref : "User"
         }
     ],
 });

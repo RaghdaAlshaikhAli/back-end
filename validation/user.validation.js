@@ -88,5 +88,11 @@ module.exports = {
       major: Joi.string().trim().min(2),
     })
     return schema.validate(obj);
+  },
+  password: (obj) => {
+    const schema = Joi.object({
+      password: Joi.string().trim().min(8).max(32).pattern(passwordRegex).required().messages(messages.password)
+    })
+    return schema.validate(obj);
   }
 }

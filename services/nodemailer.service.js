@@ -44,7 +44,21 @@ const sendUserIdEmail = (email, userId) => {
 
   return sendEmail(email, subject, templatePath, templateData);
 };
+const sendVerificationEmail = (email, verifyLink) => {
+  const templatePath = path.join(__dirname, "./Templates/verifyEmail.html");
+  const templateData = { verifyLink };
+  const subject = "Email Verification";
+
+  return sendEmail(email, subject, templatePath, templateData);
+};
+const sendPasswordResetEmail = (email, resetLink) => {
+  const templatePath = path.join(__dirname, "./Templates/passwordReset.html");
+  const templateData = { resetLink };
+  const subject = "Password Reset Request";
+
+  return sendEmail(email, subject, templatePath, templateData);
+};
 
 module.exports = {
-  sendUserIdEmail,
+  sendUserIdEmail, sendPasswordResetEmail,sendVerificationEmail
 };

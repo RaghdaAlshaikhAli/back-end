@@ -37,7 +37,7 @@ const createCourse = async (req,res) => {
 const showCourses = async (req,res)=>{
     try
     {
-        const courses = await CourseModel.find({}).populate('enroll');
+        const courses = await CourseModel.find({});
         res.status(200).json({
             status : 200,
             data: courses,
@@ -58,7 +58,7 @@ const showCourse = async (req,res)=>{
     try
     {
         const {id} = req.params
-        const course = await CourseModel.findById(id).populate('enroll');
+        const course = await CourseModel.findById(id);
         if(!course){
             res.status(404).json({message:`can not find any course with ID : ${id}`})
             logger.error(`can not find any course with ID : ${id}`)
@@ -141,43 +141,6 @@ const deleteCourse = async (req,res)=>{
     }
     
 }
-const enroll = async (req,res) => {
-    try
-    {
-        const userId = req.body.id
 
-        const courseId = req.params.courseId
-
-        const course = await CourseModel.findById(courseId);
-
-        if(!course)
-        {
-            logger.error(error.message)
-            return res.status(404).json({message:`can not find any course with ID : ${courseId}`})
-        }
-
-        if(!course.enroll.includes(userId))
-        {
-            course.enroll.push(userId);
-        }
-        else
-        {
-            logger.error(error.message)
-            return res.status(422).json({message:`This user exists !!`})
-        }
-        
-        await course.save()
-
-        res.status(200).json({message : req.body})
-
-    }
-    catch(error)
-    {
-        logger.error(error.message)
-        res.status(400).json({message : error.message})
-    }
-
-}
-
-module.exports = {createCourse,showCourses,showCourse,updateCourse,deleteCourse,enroll};
+module.exports = {createCourse,showCourses,showCourse,updateCourse,deleteCourse};
 
