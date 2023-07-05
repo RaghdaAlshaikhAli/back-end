@@ -5,7 +5,16 @@ const { cloudinaryUploadImage, cloudinaryRemoveImage } = require("../services/cl
 const fs = require("fs")
 const path = require("path");
 const generateUniqueUserId = require("../services/uniqueId");
-
+const Token = require("../model/verificationToken.model");
+/** --------------------------
+    * @ToDo Test  
+    * @in ["getAllUsers","getUserProfile"]
+    * .populate('cvs')
+    * .populate('articles')
+    * .populate('certificates')
+    * .populate('exams')
+    * .populate('lessons')
+    *  -------------------------- */
 exports.activateUserAccount = async (req, res) => {
     try {
         const { id } = req.params;
@@ -25,31 +34,37 @@ exports.activateUserAccount = async (req, res) => {
 
         return res.status(200).json({ message: "Account activated successfully" });
     } catch (error) {
-        console.error(error.message)
         return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+exports.verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const verifyToken = await Token.findOne({ token });
+        if (!verifyToken) {
+            return res.status(400).json({ message: 'Your verification link has expired. Please resend the email.' });
+        }
+        const user = await User.findById(verifyToken.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        user.isEmailVerified = true;
+        await user.save();
+        await Token.deleteOne({ token: verifyToken.token });
+        res.status(200).json({ message: 'Your email has been verified successfully.' });
+    } catch (error) {
+        console.error(message.error)
+        return res.status(500).json({ message: 'Internal server error.' });
     }
 };
 
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select("-password")
-            .populate({
-                path: 'createdCourses',
-                select: ['-instructor', "_id"],
-            })
-            .populate({
-                path: 'enrolledCourses',
-                select: ['-enroll', "_id"],
-            })
-
-        /** --------------------------
-         * @ToDo populate 
-         * @Test .populate('cvs').populate('articles').populate('certificates').populate('exams').populate('lessons')
-            -------------------------- */
+        const users = await User.find().select("-password").populate("courses")
         if (!users || users.length === 0) {
             return res.status(404).json({ message: "No users found" });
         }
-
         return res.status(200).json(users);
     } catch (error) {
         console.error(error.message)
@@ -59,19 +74,7 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select("-password")
-            .populate({
-                path: 'createdCourses',
-                select: ['-instructor', "_id"],
-            })
-            .populate({
-                path: 'enrolledCourses',
-                select: ['-enroll', "_id"],
-            })
-        /** --------------------------
-         * @ToDo populate 
-         * @Test .populate('cvs').populate('articles').populate('certificates').populate('exams').populate('lessons')
-            -------------------------- */
+        const user = await User.findById(req.params.id).select("-password").populate("courses")
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -86,36 +89,32 @@ exports.newUser = async (req, res) => {
     try {
         const { email, userId, isActive } = req.body;
         const { error } = validation.newUser(req.body);
-
         if (error) {
             return res.status(400).json({ message: error.details[0].message });
         }
 
         const existingUser = await User.findOne({ email });
-
         if (existingUser) {
             return res.status(400).json({ message: "This email is already in use" });
         }
 
         let newUserId = userId;
-
         if (!newUserId) {
             newUserId = await generateUniqueUserId();
         } else {
             const existingUserId = await User.findOne({ userId: newUserId });
-
             if (existingUserId) {
                 return res.status(400).json({ message: "This User ID is already in use" });
             }
         }
 
-        if (isActive === true) {
-            await sendUserIdEmail(email, newUserId);
-        }
-
         const newUser = new User({ ...req.body, userId: newUserId });
         await newUser.save();
 
+        if (isActive === true) {
+            await sendUserIdEmail(email, newUserId);
+            return res.status(201).json({ message: "User account created successfully. An email has been sent to the user with their unique user ID." })
+        }
         return res.status(201).json({ message: "User created successfully." });
     } catch (error) {
         console.error(error.message)
@@ -140,7 +139,7 @@ exports.updateUser = async (req, res) => {
         }
 
         if (req.file) {
-            const imagePath = path.resolve(__dirname, "../images", req.file.filename);
+            const imagePath = path.resolve(__dirname, "../uploads", req.file.filename);
             const result = await cloudinaryUploadImage(imagePath);
             const user = await User.findById(req.user.id);
 
@@ -168,6 +167,7 @@ exports.updateUser = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
 exports.deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
@@ -183,6 +183,7 @@ exports.deleteUser = async (req, res) => {
         /** -----------------------
          * @todo need to delete all photos related to user  
            -----------------------*/
+
         /** -----------------------
          * @todo need to require all models 
          * await Courses.deleteMany({ user: user._id });
