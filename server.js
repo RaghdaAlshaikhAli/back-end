@@ -8,6 +8,8 @@ const userRoutes =require("./routes/user.route")
 const authRoutes =require("./routes/auth.route")
 const jobRoutes=require('./routes/job.route')
 const cousreRoutes=require('./routes/course.route')
+const newsRoutes = require("./routes/news.route");
+const contactRoute = require("./routes/contact.routes");
 
 const loggerEvent= require("./services/logger")
 const logger= loggerEvent("server")
@@ -22,17 +24,23 @@ app.use("/api",userRoutes);
 app.use("/api",authRoutes);
 app.use("/api",jobRoutes);
 app.use("/api",cousreRoutes);
+app.use("/api", contactRoute);
+app.use("/api", newsRoutes);
 
-const url=process.env.DB_URL
-mongoose.connect(url, {
+const url = process.env.DB_URL;
+mongoose
+  .connect(url, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(()=>{
+    useUnifiedTopology: true,
+  })
+  .then(() => {
     console.log("Database connected !!!!");
-}).catch((err)=>{
+  })
+  .catch((err) => {
     console.log(err);
     console.log("Database NOT CONNECTED");
-})
+  });
+
 
 const port =process.env.PORT || 5000
 app.listen(port,()=>{console.log(`server running on port ${port}`)})
