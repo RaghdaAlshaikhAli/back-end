@@ -15,16 +15,6 @@ var storage = multer.diskStorage({
     }
 })
 
-var storage = multer.diskStorage({
-    destination: function(req, file, cd){
-        cd(null, 'uploads/news/')
-    },
-    filename: function(req, file, cd){
-        let ext = path.extname(file.originalname)
-        cd(null, Date.now() + ext)
-    }
-})
-
 var upload = multer({ 
     storage: storage,
     fileFilter : (req,file,callback) => {

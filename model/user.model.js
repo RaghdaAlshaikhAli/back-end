@@ -18,74 +18,28 @@ const userSchema = new mongoose.Schema(
     university: { type: String },
     major: { type: String },
     userId: { type: Number, unique: true },
-    isVerified: { type: Boolean, default: false },
+    isEmailVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: false },
     token: { type: String },
-    role: {
-      type: String,
-      enum: ["admin", "instructor", "student", "editor"],
-      default: "student",
-    },
+    role: { type: String, enum: ["admin", "instructor", "student", "editor"], default: "student", },
     profilePhoto: {
-      type: Object,
-      default: {
-        url:
-          "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
-        publicId: null,
-      },
+      type: Object, default: { url: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png", publicId: null, },
     },
+
+    courses: [{ type: mongoose.Schema.Types.ObjectId, ref: "courses" }],
+    /**--------------------
+     * @todo Test 
+     * cvs: [{ type: mongoose.Schema.Types.ObjectId, ref: "CV" }],
+     * articles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
+     * certificates: [{ type: mongoose.Schema.Types.ObjectId, ref: "Certificate" }],
+     * exams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Exam" }],
+     *-------------------- */
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-    id: false,
   }
 );
-/**----------------------------
- * @todo check this fields
- ----------------------------*/
-userSchema.virtual("createdCourses", {
-  ref: "Course",
-  foreignField: "instructor",
-  localField: "_id",
-});
 
-userSchema.virtual("enrolledCourses", {
-  ref: "Course",
-  foreignField: "enroll",
-  localField: "_id",
-});
-
-userSchema.virtual("cvs", {
-  ref: "Cv",
-  foreignField: "user",
-  localField: "_id",
-});
-
-userSchema.virtual("articles", {
-  ref: "Articles",
-  foreignField: "creator",
-  localField: "_id",
-});
-
-userSchema.virtual("certificates", {
-  ref: "Certificates",
-  foreignField: "user",
-  localField: "_id",
-});
-
-userSchema.virtual("exams", {
-  ref: "Exams",
-  foreignField: "student",
-  localField: "_id",
-});
-
-userSchema.virtual("lessons", {
-  ref: "lessons",
-  foreignField: "student",
-  localField: "_id",
-});
 
 userSchema.pre("save", async function (next) {
   try {
