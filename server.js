@@ -10,6 +10,8 @@ const jobRoutes=require('./routes/job.route')
 const cousreRoutes=require('./routes/course.route')
 const lessonRoutes = require("./routes/lesson.route")
 const newsRoutes=require('./routes/news.route')
+const examRoutes=require('./routes/exam.route')
+const certificateRouter = require("./routes/certificate.route")
 
 const loggerEvent= require("./services/logger")
 const logger= loggerEvent("server")
@@ -26,6 +28,8 @@ app.use("/api",jobRoutes);
 app.use("/api",cousreRoutes);
 app.use("/api",lessonRoutes)
 app.use('/api', newsRoutes)
+app.use('/api', examRoutes)
+app.use('/api', certificateRouter)
 
 const url=process.env.DB_URL
 mongoose.connect(url, {
